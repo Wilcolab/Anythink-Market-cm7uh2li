@@ -87,7 +87,9 @@ router.get("/", auth.optional, function(req, res, next) {
           items: await Promise.all(
             items.map(async function(item) {
               item.seller = await User.findById(item.seller);
-              return item.toJSONFor(user);
+              return item.toJSONFor(user, {
+                isVerified: item.seller.isVerified
+              });
             })
           ),
           itemsCount: itemsCount
@@ -128,8 +130,8 @@ router.get("/feed", auth.required, function(req, res, next) {
 
         return res.json({
           items: items.map(function(item) {
-            return item.toJSONFor(user,{
-              isVerified: seller.isVerified
+            return item.toJSONFor(user, {
+              isVerified: item.seller.isVerified
             });
           }),
           itemsCount: itemsCount
@@ -167,41 +169,45 @@ router.get("/:item", auth.optional, function(req, res, next) {
     .then(function(results) {
       var user = results[0];
 
-      return res.json({ item: req.item.toJSONFor(user) });
+      return res.json({ item: req.item.toJSONFor(user, {
+        isVerified: req.item.seller.isVerified
+      }) });
     })
-    .catch(next);
+   .catch(next);
 });
 
 // update item
 router.put("/:item", auth.required, function(req, res, next) {
   User.findById(req.payload.id).then(function(user) {
     if (req.item.seller._id.toString() === req.payload.id.toString()) {
-      if (typeof req.body.item.title !== "undefined") {
+      if (typeof req.body.item.title!== "undefined") {
         req.item.title = req.body.item.title;
       }
 
-      if (typeof req.body.item.description !== "undefined") {
+      if (typeof req.body.item.description!== "undefined") {
         req.item.description = req.body.item.description;
       }
 
-      if (typeof req.body.item.image !== "undefined") {
+      if (typeof req.body.item.image!== "undefined") {
         req.item.image = req.body.item.image;
       }
 
-      if (typeof req.body.item.tagList !== "undefined") {
+      if (typeof req.body.item.tagList!== "undefined") {
         req.item.tagList = req.body.item.tagList;
       }
 
-      if (typeof req.body.item.isVerified !== "undefined") {
+      if (typeof req.body.item.isVerified!== "undefined") {
         req.item.isVerified = req.body.item.isVerified;
       }
 
       req.item
-        .save()
-        .then(function(item) {
-          return res.json({ item: item.toJSONFor(user) });
+       .save()
+       .then(function(item) {
+          return res.json({ item: item.toJSONFor(user, {
+            isVerified: item.seller.isVerified
+          }) });
         })
-        .catch(next);
+       .catch(next);
     } else {
       return res.sendStatus(403);
     }
@@ -211,7 +217,7 @@ router.put("/:item", auth.required, function(req, res, next) {
 // delete item
 router.delete("/:item", auth.required, function(req, res, next) {
   User.findById(req.payload.id)
-    .then(function(user) {
+   .then(function(user) {
       if (!user) {
         return res.sendStatus(401);
       }
@@ -224,7 +230,7 @@ router.delete("/:item", auth.required, function(req, res, next) {
         return res.sendStatus(403);
       }
     })
-    .catch(next);
+   .catch(next);
 });
 
 // Favorite an item
@@ -232,7 +238,7 @@ router.post("/:item/favorite", auth.required, function(req, res, next) {
   var itemId = req.item._id;
 
   User.findById(req.payload.id)
-    .then(function(user) {
+   .then(function(user) {
       if (!user) {
         return res.sendStatus(401);
       }
@@ -243,7 +249,7 @@ router.post("/:item/favorite", auth.required, function(req, res, next) {
         });
       });
     })
-    .catch(next);
+   .catch(next);
 });
 
 // Unfavorite an item
@@ -251,7 +257,7 @@ router.delete("/:item/favorite", auth.required, function(req, res, next) {
   var itemId = req.item._id;
 
   User.findById(req.payload.id)
-    .then(function(user) {
+   .then(function(user) {
       if (!user) {
         return res.sendStatus(401);
       }
@@ -262,15 +268,15 @@ router.delete("/:item/favorite", auth.required, function(req, res, next) {
         });
       });
     })
-    .catch(next);
+   .catch(next);
 });
 
 // return an item's comments
 router.get("/:item/comments", auth.optional, function(req, res, next) {
-  Promise.resolve(req.payload ? User.findById(req.payload.id) : null)
-    .then(function(user) {
+  Promise.resolve(req.payload? User.findById(req.payload.id) : null)
+   .then(function(user) {
       return req.item
-        .populate({
+       .populate({
           path: "comments",
           populate: {
             path: "seller"
@@ -281,8 +287,8 @@ router.get("/:item/comments", auth.optional, function(req, res, next) {
             }
           }
         })
-        .execPopulate()
-        .then(function(item) {
+       .execPopulate()
+       .then(function(item) {
           return res.json({
             comments: req.item.comments.map(function(comment) {
               return comment.toJSONFor(user);
@@ -290,13 +296,13 @@ router.get("/:item/comments", auth.optional, function(req, res, next) {
           });
         });
     })
-    .catch(next);
+   .catch(next);
 });
 
 // create a new comment
 router.post("/:item/comments", auth.required, function(req, res, next) {
   User.findById(req.payload.id)
-    .then(function(user) {
+   .then(function(user) {
       if (!user) {
         return res.sendStatus(401);
       }
@@ -313,7 +319,7 @@ router.post("/:item/comments", auth.required, function(req, res, next) {
         });
       });
     })
-    .catch(next);
+   .catch(next);
 });
 
 router.delete("/:item/comments/:comment", auth.required, function(
@@ -323,13 +329,13 @@ router.delete("/:item/comments/:comment", auth.required, function(
 ) {
   req.item.comments.remove(req.comment._id);
   req.item
-    .save()
-    .then(
+   .save()
+   .then(
       Comment.find({ _id: req.comment._id })
-        .remove()
-        .exec()
+       .remove()
+       .exec()
     )
-    .then(function() {
+   .then(function() {
       res.sendStatus(204);
     });
 });
