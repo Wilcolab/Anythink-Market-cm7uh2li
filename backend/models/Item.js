@@ -56,7 +56,7 @@ ItemSchema.methods.toJSONFor = function(user) {
     favorited: user ? user.isFavorite(this._id) : false,
     favoritesCount: this.favoritesCount,
     seller: this.seller.toProfileJSONFor(user),
-    isVerified: this.isVerified, 
+    isVerified: this.seller.isVerified, 
   };
 };
 
