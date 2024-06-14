@@ -128,7 +128,9 @@ router.get("/feed", auth.required, function(req, res, next) {
 
         return res.json({
           items: items.map(function(item) {
-            return item.toJSONFor(user);
+            return item.toJSONFor(user,{
+              isVerified: seller.isVerified
+            });
           }),
           itemsCount: itemsCount
         });
