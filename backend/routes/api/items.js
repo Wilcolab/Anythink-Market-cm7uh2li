@@ -190,6 +190,10 @@ router.put("/:item", auth.required, function(req, res, next) {
         req.item.tagList = req.body.item.tagList;
       }
 
+      if (typeof req.body.item.isVerified !== "undefined") {
+        req.item.isVerified = req.body.item.isVerified;
+      }
+
       req.item
         .save()
         .then(function(item) {
