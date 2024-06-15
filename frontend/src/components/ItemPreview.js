@@ -56,7 +56,7 @@ const ItemPreview = (props) => {
             />
           </Link>
           {item.seller?.isVerified && <div>
-            <img src="/verified_seller.svg"
+            <img src="verified_seller.svg"
                 alt="Verified"
                 />
             <span>TOP SELLER</span>
