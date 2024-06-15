@@ -20,7 +20,7 @@ const mapDispatchToProps = (dispatch) => ({
 const ItemPreview = (props) => {
   const item = props.item;
 
-  const handleClick = (ev) => {
+    const handleClick = (ev) => {
     ev.preventDefault();
     if (item.favorited) {
       props.unfavorite(item.slug);
@@ -55,7 +55,7 @@ const ItemPreview = (props) => {
               className="user-pic rounded-circle pr-1"
             />
           </Link>
-          {item.seller.isVerified && <div>
+          {item.seller?.isVerified && <div>
             <img src="/verified_seller.svg"
                 alt="Verified"
                 />
