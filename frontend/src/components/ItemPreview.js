@@ -20,7 +20,7 @@ const mapDispatchToProps = (dispatch) => ({
 const ItemPreview = (props) => {
   const item = props.item;
 
-    const handleClick = (ev) => {
+  const handleClick = (ev) => {
     ev.preventDefault();
     if (item.favorited) {
       props.unfavorite(item.slug);
@@ -47,7 +47,6 @@ const ItemPreview = (props) => {
           <p className="card-text crop-text-3">{item.description}</p>
         </Link>
         <div className="d-flex flex-row align-items-center pt-2 item-footer">
-          {/* <div className="d-flex flex-row align-items-center flex-grow-1"> */}
           <Link to={`/@${item.seller.username}`} className="flex-grow-1">
             <img
               src={item.seller.image}
@@ -55,13 +54,6 @@ const ItemPreview = (props) => {
               className="user-pic rounded-circle pr-1"
             />
           </Link>
-          {item.seller?.isVerified && <div>
-            <img src="verified_seller.svg"
-                alt="Verified"
-                />
-            <span>TOP SELLER</span>
-          </div>}
-          {/* </div> */}
           <button className="btn btn-outline-secondary" onClick={handleClick}>
             <i className="ion-heart"></i> {item.favoritesCount}
           </button>
