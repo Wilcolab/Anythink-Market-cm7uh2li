@@ -9,7 +9,7 @@ const { sendEvent } = require("../../lib/event");
 // Preload item objects on routes with ':item'
 router.param("item", function(req, res, next, slug) {
   Item.findOne({ slug: slug })
-    .populate("seller")
+    .populate("seller", { select: "isVerified" })
     .then(function(item) {
       if (!item) {
         return res.sendStatus(404);

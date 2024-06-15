@@ -13,7 +13,6 @@ var ItemSchema = new mongoose.Schema(
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     tagList: [{ type: String }],
     seller: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    isVerified: { type: Boolean, default: false }
   },
   { timestamps: true }
 );
