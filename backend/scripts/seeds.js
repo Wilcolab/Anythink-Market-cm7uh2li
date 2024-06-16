@@ -1,66 +1,109 @@
-const MongoClient = require('mongodb').MongoClient;
+const mongoose = require('mongoose');
 
 // Set the database connection parameters
 const dbUrl = 'mongodb://172.18.0.2:27017';
 const dbName = 'anythink-market';
 
-// Create a MongoDB client
-MongoClient.connect(dbUrl, async function(err, client) {
-  if (err) {
-    console.error(err);
-    return;
-  }
+// Create a Mongoose connection
+mongoose.connect(dbUrl + '/' + dbName, { useNewUrlParser: true, useUnifiedTopology: true });
 
+const db = mongoose.connection;
+
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', async function() {
   console.log(`Connected to MongoDB`);
 
-  const db = client.db(dbName);
+  // Define the models
+  const userSchema = new mongoose.Schema({
+    username: {
+      type: String,
+      lowercase: true,
+      unique: true,
+      required: [true, "can't be blank"],
+      match: [/^[a-zA-Z0-9]+$/, "is invalid"],
+      index: true
+    },
+    email: {
+      type: String,
+      lowercase: true,
+      unique: true,
+      required: [true, "can't be blank"],
+      match: [/\S+@\S+\.\S+/, "is invalid"],
+      index: true
+    },
+    bio: String,
+    image: String,
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user"
+    },
+    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Item" }],
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    hash: String,
+    salt: String
+  }, { timestamps: true });
 
-  // Create the database if it doesn't exist
-  await db.createCollection('users');
-  await db.createCollection('products');
-  await db.createCollection('comments');
+  const itemSchema = new mongoose.Schema({
+    slug: { type: String, lowercase: true, unique: true },
+    title: {type: String, required: [true, "can't be blank"]},
+    description: {type: String, required: [true, "can't be blank"]},
+    image: String,
+    favoritesCount: { type: Number, default: 0 },
+    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
+    tagList: [{ type: String }],
+    seller: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
+  }, { timestamps: true });
 
-  console.log(`Collections created: users, products, comments`);
+  const commentSchema = new mongoose.Schema({
+    body: String,
+    seller: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    item: { type: mongoose.Schema.Types.ObjectId, ref: "Item" }
+  }, { timestamps: true });
 
-//   Seed the database with users
+  const User = mongoose.model('User', userSchema);
+  const Item = mongoose.model('Item', itemSchema);
+  const Comment = mongoose.model('Comment', commentSchema);
+
+  // Clear existing data
+  await User.deleteMany({});
+  await Item.deleteMany({});
+  await Comment.deleteMany({});
+
+  console.log(`Existing data cleared`);
+
+  // Seed the database with users
   for (let i = 1; i <= 100; i++) {
     const username = `user${i}`;
     const email = `${username}@example.com`;
-    const password = 'password';
+    const bio = `Bio for user ${i}`;
+    const image = `Image for user ${i}`;
+    const role = 'user';
 
-    await db.collection('users').insertOne({ username, email, password });
+    await User.create({ username, email, bio, image, role, hash: 'hashed_password', salt: 'alt' });
   }
 
-//   Seed the database with products
+  // Seed the database with items
   for (let i = 1; i <= 100; i++) {
-    const name = `product${i}`;
-    const description = `This is product ${i}`;
-    const price = i;
+    const title = `Item ${i}`;
+    const description = `This is item ${i}`;
+    const image = `Image for item ${i}`;
+    const seller = await User.findOne({ username: `user${Math.floor(Math.random() * 100) + 1}` });
 
-    await db.collection('products').insertOne({ name, description, price });
+    await Item.create({title, description, image, seller: seller._id, tagList: [] });
   }
-
-    // Seed the database with products
-    for (let i = 1; i <= 100; i++) {
-        const name = `items${i}`;
-        const description = `This is items ${i}`;
-        const price = i;
-
-        await db.collection('items').insertOne({ name, description, price });
-        }
-    
 
   // Seed the database with comments
   for (let i = 1; i <= 100; i++) {
-    const userId = Math.floor(Math.random() * 100) + 1;
-    const productId = Math.floor(Math.random() * 100) + 1;
-    const comment = `This is comment ${i} for product ${productId}`;
+    const body = `This is comment ${i}`;
+    const seller = await User.findOne({ username: `user${Math.floor(Math.random() * 100) + 1}` });
+    const item = await Item.findOne({ title: `Item ${Math.floor(Math.random() * 100) + 1}` });
 
-    await db.collection('comments').insertOne({ userId, productId, comment });
+    await Comment.create({ body, seller: seller._id, item: item._id });
   }
 
   console.log(`Data seeded successfully`);
 
-  // Close the client
-  client.close();
+  // Close the connection
+  mongoose.disconnect();
 });
