@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
 // Set the database connection parameters
-const dbUrl = 'mongodb:172.18.0.2:27017';
-const dbName = 'anythink-market';
+// const dbUrl = 'mongodb:172.18.0.2:27017';
+// const dbName = 'anythink-market';
 
 // Create a Mongoose connection
-mongoose.connect(`${dbUrl}/${dbName}`, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const db = mongoose.connection;
 
