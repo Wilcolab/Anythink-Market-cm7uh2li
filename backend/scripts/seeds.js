@@ -65,12 +65,12 @@ db.once('open', async function() {
   const Item = mongoose.model('Item', itemSchema);
   const Comment = mongoose.model('Comment', commentSchema);
 
-  // Clear existing data
-  await User.deleteMany({});
-  await Item.deleteMany({});
-  await Comment.deleteMany({});
+  // // Clear existing data
+  // await User.deleteMany({});
+  // await Item.deleteMany({});
+  // await Comment.deleteMany({});
 
-  console.log(`Existing data cleared`);
+  // console.log(`Existing data cleared`);
 
   // Seed the database with users
   for (let i = 1; i <= 100; i++) {
