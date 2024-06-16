@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // Set the database connection parameters
-const dbUrl = 'mongodb://mongodb-node:27017';
+const dbUrl = 'mongodb:172.18.0.2:27017';
 const dbName = 'anythink-market';
 
 // Create a Mongoose connection
