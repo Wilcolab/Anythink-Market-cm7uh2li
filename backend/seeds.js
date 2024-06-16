@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
 // Set the database connection parameters
-const dbUrl = 'mongodb://mongodb-node:27017/anythink-market';
+const dbUrl = 'mongodb://mongodb-node:27017';
 const dbName = 'anythink-market';
 
 // Create a Mongoose connection
-mongoose.connect(dbUrl + '/' + dbName, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(`${dbUrl}/${dbName}`, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const db = mongoose.connection;
 
@@ -65,39 +65,40 @@ db.once('open', async function() {
   const Item = mongoose.model('Item', itemSchema);
   const Comment = mongoose.model('Comment', commentSchema);
 
-  // // Clear existing data
-  // await User.deleteMany({});
-  // await Item.deleteMany({});
-  // await Comment.deleteMany({});
-
-  // console.log(`Existing data cleared`);
+  const getRandomInt = (max) => {
+    return Math.floor(Math.random() * max) + 1;
+  };
 
   // Seed the database with users
   for (let i = 1; i <= 100; i++) {
-    const username = `user${i}`;
+    const randomNumber = getRandomInt(1000000); // Adjust the range as needed
+    const username = `user${randomNumber}`;
     const email = `${username}@example.com`;
-    const bio = `Bio for user ${i}`;
-    const image = `Image for user ${i}`;
+    const bio = `Bio for user ${randomNumber}`;
+    const image = `Image for user ${randomNumber}`;
     const role = 'user';
 
-    await User.create({ username, email, bio, image, role, hash: 'hashed_password', salt: 'alt' });
+    await User.create({ username, email, bio, image, role, hash: 'hashed_password', salt: 'salt' });
   }
 
   // Seed the database with items
   for (let i = 1; i <= 100; i++) {
-    const title = `Item ${i}`;
-    const description = `This is item ${i}`;
-    const image = `Image for item ${i}`;
-    const seller = await User.findOne({ username: `user${Math.floor(Math.random() * 100) + 1}` });
+    const randomNumber = getRandomInt(1000000); // Adjust the range as needed
+    const title = `Item ${randomNumber}`;
+    const description = `This is item ${randomNumber}`;
+    const image = `Image for item ${randomNumber}`;
+    const seller = await User.findOne().skip(getRandomInt(await User.countDocuments()) - 1); // get random seller
+    const slug = `item-${Math.random().toString(36).substr(2, 9)}`; // generate a random slug
 
-    await Item.create({title, description, image, seller: seller._id, tagList: [] });
+    await Item.create({ title, description, image, seller: seller._id, slug, tagList: [] });
   }
 
   // Seed the database with comments
   for (let i = 1; i <= 100; i++) {
-    const body = `This is comment ${i}`;
-    const seller = await User.findOne({ username: `user${Math.floor(Math.random() * 100) + 1}` });
-    const item = await Item.findOne({ title: `Item ${Math.floor(Math.random() * 100) + 1}` });
+    const randomNumber = getRandomInt(1000000); // Adjust the range as needed
+    const body = `This is comment ${randomNumber}`;
+    const seller = await User.findOne().skip(getRandomInt(await User.countDocuments()) - 1); // get random seller
+    const item = await Item.findOne().skip(getRandomInt(await Item.countDocuments()) - 1); // get random item
 
     await Comment.create({ body, seller: seller._id, item: item._id });
   }
