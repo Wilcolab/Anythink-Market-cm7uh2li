@@ -10,6 +10,7 @@ import {
   PROFILE_PAGE_UNLOADED,
   PROFILE_FAVORITES_PAGE_LOADED,
   PROFILE_FAVORITES_PAGE_UNLOADED,
+  SEARCH_ITEMS
 } from "../constants/actionTypes";
 
 const reducer = (state = {}, action) => {
@@ -80,6 +81,12 @@ const reducer = (state = {}, action) => {
     case PROFILE_PAGE_UNLOADED:
     case PROFILE_FAVORITES_PAGE_UNLOADED:
       return {};
+    case SEARCH_ITEMS:
+      return {
+        ...state,
+        items: action.payload.items,
+        itemsCount: action.payload.itemsCount
+      };
     default:
       return state;
   }

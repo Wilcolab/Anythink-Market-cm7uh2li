@@ -146,7 +146,7 @@ class AnythinkClient {
     return result.data?.comments;
   }
 
-  async getUserItems(seller, limit, offset, favorited, tag, callingUser) {
+  async getUserItems(seller, limit, offset, favorited, tag, callingUser,title) {
     let url = `/api/items?seller=${seller}`;
 
     if (limit) {
@@ -163,6 +163,10 @@ class AnythinkClient {
 
     if (tag) {
       url += `&tag=${tag}`;
+    }
+
+    if (title) {
+      url += `&title=${encodeURIComponent(title)}`;
     }
 
     const result = await this.#apiCall({ url, callingUser });
